@@ -9,6 +9,7 @@ terraform {
 
 provider "ibm" {
   region = "us-east"
+  ibmcloud_api_key = var.ibm_api_key
 }
 
 variable "project_name" {
@@ -16,13 +17,20 @@ variable "project_name" {
   type        = string
 }
 
+data "ibm_resource_group" "default" {
+  name = "Default"
+}
+
 resource "ibm_code_engine_project" "project" {
   name = var.project_name
+  resource_group_id = data.ibm_resource_group.default.id
 }
 
 variable "backend_image" {
   default = "icr.io/iotmaxapi/iotmaxapi:latest"
 }
+
+
 
 variable "frontend_image" {
   default = "icr.io/iotmax-frontend/iotmax-frontend:latest"
@@ -43,6 +51,7 @@ variable "backend_env_vars" {
   type        = map(string)
   default     = {}
 }
+
 
 
 resource "ibm_code_engine_secret" "registry_secret" {
@@ -101,11 +110,10 @@ resource "ibm_code_engine_app" "frontend" {
 }
 
 output "backend_url" {
-  description = "Backend application URL"
-  value       = ibm_code_engine_app.backend.endpoint
+  value =  ibm_code_engine_app.backend.endpoint
 }
 
 output "frontend_url" {
-  description = "Frontend application URL"
-  value       = ibm_code_engine_app.frontend.endpoint
+  value =  ibm_code_engine_app.frontend.endpoint
 }
+
